@@ -1,0 +1,61 @@
+services:
+  #POSTGRESQL
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: spring-ai-postgres
+    environment:
+      POSTGRES_DB: vectordb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready -U  postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  #CHROMADB
+  chroma:
+    image: chromadb/chroma:0.6.3
+    container_name: spring-ai-chroma
+    environment:
+      ANONYMIZED_TELEMETRY: "false"
+      IS_PERSISTENT: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      - chromadata:/chroma/chroma
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  #REDIS STACK
+  redis:
+    image: redis/redis-stack:7.4.0-v2
+    container_name: spring-ai-redis
+    environment:
+      REDIS_ARGS: "--requirepass redis123"
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis123", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+  
+volumes:
+  pg_data:
+  chromadata:
+  redisdata:
