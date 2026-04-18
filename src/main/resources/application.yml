@@ -6,7 +6,7 @@ spring:
 
   # --- VARSAYILAN PROFIL ---
   profiles:
-    default: gemini
+    default: ollama
 
   servlet:
     multipart:
